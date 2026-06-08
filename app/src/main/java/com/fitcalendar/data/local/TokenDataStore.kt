@@ -1,28 +1,28 @@
 package com.fitcalendar.data.local
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class TokenDataStore(private val context: Context) {
-    companion object {
-        private val KEY_TOKEN = stringPreferencesKey("api_token")
-    }
+    private val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
 
-    val token: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[KEY_TOKEN] ?: ""
-    }
+    private val prefs = EncryptedSharedPreferences.create(
+        "secure_settings",
+        masterKeyAlias,
+        context,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+
+    private val _token = MutableStateFlow(prefs.getString("api_token", "") ?: "")
+    val token: Flow<String> = _token.asStateFlow()
 
     suspend fun saveToken(token: String) {
-        context.dataStore.edit { preferences ->
-            preferences[KEY_TOKEN] = token
-        }
+        prefs.edit().putString("api_token", token).apply()
+        _token.value = token
     }
 }
