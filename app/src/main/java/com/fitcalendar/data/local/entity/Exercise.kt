@@ -13,7 +13,10 @@ import androidx.room.PrimaryKey
         childColumns = ["planDayId"],
         onDelete = ForeignKey.CASCADE
     )],
-    indices = [Index("planDayId")]
+    indices = [
+        Index("planDayId"),
+        Index(value = ["planDayId", "sortOrder"], unique = true)
+    ]
 )
 data class Exercise(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

@@ -13,7 +13,10 @@ import androidx.room.PrimaryKey
         childColumns = ["planId"],
         onDelete = ForeignKey.CASCADE
     )],
-    indices = [Index("planId")]
+    indices = [
+        Index("planId"),
+        Index(value = ["planId", "dayIndex"], unique = true)
+    ]
 )
 data class PlanDay(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
