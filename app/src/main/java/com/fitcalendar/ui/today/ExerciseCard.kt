@@ -12,6 +12,7 @@ import com.fitcalendar.ui.theme.OrangePrimary
 import com.fitcalendar.ui.theme.TextGray
 import com.fitcalendar.ui.theme.TextWhite
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseCard(
     item: ExerciseWithRecord,
