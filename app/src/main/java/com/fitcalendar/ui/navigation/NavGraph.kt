@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.fitcalendar.ui.plan.PlanScreen
 
 @Composable
 fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -28,9 +29,7 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
             }
         }
         composable("plan") {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("计划 - 待实现")
-            }
+            PlanScreen()
         }
     }
 }
