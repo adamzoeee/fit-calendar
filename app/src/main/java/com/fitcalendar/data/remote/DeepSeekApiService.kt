@@ -6,6 +6,8 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class DeepSeekApiService {
     private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
@@ -47,7 +49,7 @@ class DeepSeekApiService {
 5. 如果有休息日，label 标注"休息日"，exercises 为空数组 []
     """.trimIndent()
 
-    suspend fun generateSchedule(token: String, userPrompt: String): Result<ScheduleResponse> {
+    suspend fun generateSchedule(token: String, userPrompt: String): Result<ScheduleResponse> = withContext(Dispatchers.IO) {
         val request = GenRequest(
             messages = listOf(
                 Message("system", systemPrompt),
@@ -65,17 +67,17 @@ class DeepSeekApiService {
             .post(requestBody)
             .build()
 
-        return try {
+        try {
             val response = client.newCall(httpRequest).execute()
             val body = response.body?.string() ?: ""
 
             if (!response.isSuccessful) {
-                return Result.failure(IOException("API error ${response.code}: $body"))
+                return@withContext Result.failure(IOException("API error ${response.code}: $body"))
             }
 
             val genResp = json.decodeFromString(GenResponse.serializer(), body)
             val content = genResp.choices.firstOrNull()?.message?.content
-                ?: return Result.failure(IOException("Empty response"))
+                ?: return@withContext Result.failure(IOException("Empty response"))
 
             // 提取 JSON 块（消除可能的 markdown 代码块包裹）
             val jsonBlock = extractJson(content)
