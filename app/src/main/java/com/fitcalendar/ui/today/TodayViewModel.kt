@@ -62,6 +62,13 @@ class TodayViewModel @Inject constructor(
             }
 
             val exercises = planRepository.getExercisesForDay(planDay.id)
+            val isRest = planDay.label.contains("休息") || exercises.isEmpty()
+
+            if (isRest) {
+                _uiState.update { it.copy(hasActivePlan = true, selectedDate = date, dateLabel = dateLabel, planDayLabel = planDay.label, exercises = emptyList(), isRestDay = true) }
+                return@launch
+            }
+
             val dateStr = date.toString()
             val exerciseWithRecords = exercises.map { ex ->
                 val record = trainingRepository.getLatest(ex.name, dateStr)
@@ -75,7 +82,11 @@ class TodayViewModel @Inject constructor(
     fun saveWeight(exerciseName: String, weight: Double) {
         viewModelScope.launch {
             val date = _uiState.value.selectedDate.toString()
-            trainingRepository.saveRecord(exerciseName, date, weight, repsDone = 0)
+            // 先查已有记录保留 repsDone 和 notes
+            val existing = trainingRepository.getLatest(exerciseName, date)
+            val repsDone = existing?.repsDone ?: 0
+            val notes = existing?.notes ?: ""
+            trainingRepository.saveRecord(exerciseName, date, weight, repsDone = repsDone, notes = notes)
             loadDay(_uiState.value.selectedDate)
         }
     }
@@ -83,8 +94,13 @@ class TodayViewModel @Inject constructor(
     fun toggleExerciseCompleted(exerciseName: String, completed: Boolean) {
         viewModelScope.launch {
             val date = _uiState.value.selectedDate.toString()
-            val currentWeight = _uiState.value.exercises.find { it.exercise.name == exerciseName }?.lastRecord?.weight ?: 0.0
-            trainingRepository.saveRecord(exerciseName, date, currentWeight, repsDone = if (completed) 12 else 0)
+            // 先查已有记录保留 weight 和 notes
+            val existing = trainingRepository.getLatest(exerciseName, date)
+            val currentWeight = existing?.weight
+                ?: _uiState.value.exercises.find { it.exercise.name == exerciseName }?.lastRecord?.weight
+                ?: 0.0
+            val notes = existing?.notes ?: ""
+            trainingRepository.saveRecord(exerciseName, date, currentWeight, repsDone = if (completed) 12 else 0, notes = notes)
             loadDay(_uiState.value.selectedDate)
         }
     }

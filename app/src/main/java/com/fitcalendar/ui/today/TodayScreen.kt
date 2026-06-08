@@ -13,9 +13,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fitcalendar.ui.theme.TextGray
+import java.time.LocalDate
 
 @Composable
-fun TodayScreen(viewModel: TodayViewModel = hiltViewModel()) {
+fun TodayScreen(
+    viewModel: TodayViewModel = hiltViewModel(),
+    initialDate: String = ""
+) {
+    LaunchedEffect(initialDate) {
+        if (initialDate.isNotBlank()) {
+            try {
+                val date = LocalDate.parse(initialDate)
+                viewModel.goToDate(date)
+            } catch (_: Exception) {}
+        }
+    }
+
     val state by viewModel.uiState.collectAsState()
     var selectedExercise by remember { mutableStateOf<ExerciseWithRecord?>(null) }
 

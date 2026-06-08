@@ -1,14 +1,12 @@
 package com.fitcalendar.ui.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navArgument
 import com.fitcalendar.ui.plan.PlanScreen
 import com.fitcalendar.ui.today.TodayScreen
 import com.fitcalendar.ui.week.WeekScreen
@@ -20,18 +18,26 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
         startDestination = "today",
         modifier = modifier
     ) {
-        composable("today") {
-            TodayScreen()
+        composable(
+            route = "today?dateStr={dateStr}",
+            arguments = listOf(navArgument("dateStr") { type = NavType.StringType; defaultValue = "" })
+        ) { backStackEntry ->
+            val dateStr = backStackEntry.arguments?.getString("dateStr") ?: ""
+            TodayScreen(initialDate = dateStr)
         }
         composable("week") {
             WeekScreen(onDayClick = { dateStr ->
-                navController.navigate("today") {
+                navController.navigate("today?dateStr=$dateStr") {
                     popUpTo("today") { inclusive = true }
                 }
             })
         }
         composable("plan") {
-            PlanScreen()
+            PlanScreen(onGenerateComplete = {
+                navController.navigate("today") {
+                    popUpTo("today") { inclusive = true }
+                }
+            })
         }
     }
 }
