@@ -9,3 +9,5 @@ app/build/
 *.aab
 *.dex
 *.class
+node_modules/
+.codegraph/

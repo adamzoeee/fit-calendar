@@ -6,11 +6,11 @@
         android:allowBackup="true"
         android:label="FitCalendar"
         android:supportsRtl="true"
-        android:theme="@style/Theme.FitCalendar">
+        android:theme="@style/Theme.AppCompat.NoActionBar">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.FitCalendar">
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
