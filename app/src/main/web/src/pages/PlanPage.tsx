@@ -7,8 +7,7 @@ import type { ScheduleResponse } from '../api/deepseek';
 
 export function PlanPage({ onGenerateComplete }: { onGenerateComplete?: () => void }) {
   const [token, setToken] = useState('');
-  const [prompt, setPrompt] = useState('');
-  const [freeDesc, setFreeDesc] = useState('');
+  const [description, setDescription] = useState('');
   const [plans, setPlans] = useState<Plan[]>([]);
   const [activePlanId, setActivePlanId] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -30,7 +29,7 @@ export function PlanPage({ onGenerateComplete }: { onGenerateComplete?: () => vo
   }, []);
 
   const handleGenerate = async () => {
-    const userPrompt = prompt.trim() || freeDesc.trim();
+    const userPrompt = description.trim();
     if (!token.trim() || !userPrompt) {
       setError('请填写 Token 和训练描述');
       return;
@@ -81,8 +80,7 @@ export function PlanPage({ onGenerateComplete }: { onGenerateComplete?: () => vo
       await planDao.activateAndDeactivateOthers(Number(planId));
       setShowPreview(false);
       setGeneratedSchedule(null);
-      setPrompt('');
-      setFreeDesc('');
+      setDescription('');
       await loadPlans();
       onGenerateComplete?.();
     } catch (e: any) {
@@ -130,7 +128,8 @@ export function PlanPage({ onGenerateComplete }: { onGenerateComplete?: () => vo
       <div class="divider" />
 
       {/* API Token */}
-      <div class="text-lg font-bold mb-4">📡 API Token</div>
+      <div class="text-lg font-bold mb-1">🔑 DeepSeek API Token</div>
+      <div class="text-sm text-secondary mb-3">仅保存在本地，不会上传</div>
       <div class="flex gap-2">
         <input
           class="input flex-1"
@@ -157,18 +156,10 @@ export function PlanPage({ onGenerateComplete }: { onGenerateComplete?: () => vo
       <div class="text-lg font-bold mb-4">✍️ 生成新计划</div>
       <textarea
         class="input"
-        value={prompt}
-        onInput={(e) => setPrompt((e.target as HTMLTextAreaElement).value)}
-        placeholder="提示词（如：我想练五分化...）"
-        rows={3}
-      />
-      <div class="text-sm text-secondary mt-2 mb-2">或</div>
-      <textarea
-        class="input"
-        value={freeDesc}
-        onInput={(e) => setFreeDesc((e.target as HTMLTextAreaElement).value)}
-        placeholder="自由描述（如：周一练胸...）"
-        rows={3}
+        value={description}
+        onInput={(e) => setDescription((e.target as HTMLTextAreaElement).value)}
+        placeholder="描述你想要的训练计划（如：五分化，周一到周五练胸/背/肩/腿/手臂，每天5个动作...）"
+        rows={4}
       />
       <button
         class="btn btn-primary w-full mt-4"
