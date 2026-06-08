@@ -128,8 +128,10 @@ export function PlanPage({ onGenerateComplete }: { onGenerateComplete?: () => vo
       <div class="divider" />
 
       {/* API Token */}
-      <div class="text-lg font-bold mb-1">🔑 DeepSeek API Token</div>
-      <div class="text-sm text-secondary mb-3">仅保存在本地，不会上传</div>
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-lg font-bold">🔑 DeepSeek API Token</span>
+        <span class="text-sm text-secondary">仅保存在本地，不会上传</span>
+      </div>
       <div class="flex gap-2">
         <input
           class="input flex-1"
