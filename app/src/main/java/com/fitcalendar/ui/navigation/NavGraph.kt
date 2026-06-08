@@ -10,6 +10,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.fitcalendar.ui.plan.PlanScreen
+import com.fitcalendar.ui.today.TodayScreen
 
 @Composable
 fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -19,9 +20,7 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
         modifier = modifier
     ) {
         composable("today") {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("今日视图 - 待实现")
-            }
+            TodayScreen()
         }
         composable("week") {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
