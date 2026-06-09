@@ -112,6 +112,43 @@ export const exerciseDao = {
   },
 };
 
+// --- Plan helpers ---
+
+export async function getPlanSummaries(): Promise<Array<Plan & { dayLabels: string[]; dayCount: number }>> {
+  const plans = await planDao.getAll();
+  const result = [];
+  for (const plan of plans) {
+    const days = await planDayDao.getByPlanId(plan.id!);
+    result.push({
+      ...plan,
+      dayLabels: days.map(d => d.label),
+      dayCount: days.length,
+    });
+  }
+  return result;
+}
+
+export async function getPlanAsScheduleResponse(planId: number): Promise<{ planName: string; days: { label: string; exercises: Exercise[] }[] }> {
+  const plan = await planDao.getById(planId);
+  const days = await planDayDao.getByPlanId(planId);
+  const daysWithExercises = await Promise.all(
+    days.map(async (day) => {
+      const exercises = await exerciseDao.getByPlanDayId(day.id!);
+      return { label: day.label, exercises };
+    })
+  );
+  return {
+    planName: plan?.name || '',
+    days: daysWithExercises,
+  };
+}
+
+export async function deletePlanCascade(planId: number): Promise<void> {
+  await exerciseDao.deleteByPlanId(planId);
+  await planDayDao.deleteByPlanId(planId);
+  await planDao.delete(planId);
+}
+
 // --- TrainingRecord DAO ---
 
 export const trainingRecordDao = {

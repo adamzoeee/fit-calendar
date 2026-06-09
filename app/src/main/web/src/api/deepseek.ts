@@ -44,7 +44,7 @@ export interface ExerciseDto {
   instructions: string;
 }
 
-// --- System Prompt ---
+// --- System Prompts ---
 
 const SYSTEM_PROMPT = `你是一个专业的健身教练。请根据用户的描述，生成一个结构化的健身日程。
 
@@ -76,6 +76,37 @@ const SYSTEM_PROMPT = `你是一个专业的健身教练。请根据用户的描
 4. instructions 至少 30 字，涵盖姿势、呼吸、安全要点
 5. 如果有休息日，label 标注"休息日"，exercises 为空数组 []`;
 
+const MODIFY_SYSTEM_PROMPT = `你是一个专业的健身教练。用户有一份现有的健身计划，希望根据修改描述进行调整。
+
+你必须严格按照以下 JSON 格式输出修改后的完整计划，不要包含任何额外的文字或 markdown：
+
+{
+  "planName": "计划名称",
+  "days": [
+    {
+      "label": "Day 1 - 训练部位",
+      "exercises": [
+        {
+          "name": "动作名称",
+          "sets": 4,
+          "reps": "8-12",
+          "restSeconds": 90,
+          "muscleGroup": "肌肉群",
+          "instructions": "详细动作要点，包括起始姿势、运动轨迹、呼吸方式、注意事项"
+        }
+      ]
+    }
+  ]
+}
+
+规则：
+1. 基于现有计划结构，根据修改描述进行调整
+2. 修改描述中提到的部分按要求改，未提及的部分保持原样
+3. 每个训练日保持 4-7 个动作
+4. reps 用字符串表示
+5. instructions 至少 30 字，涵盖姿势、呼吸、安全要点
+6. 输出完整的修改后计划，不要遗漏任何天`;
+
 // --- API Service ---
 
 function extractJson(text: string): string {
@@ -89,12 +120,17 @@ function extractJson(text: string): string {
 
 export async function generateSchedule(
   token: string,
-  userPrompt: string
+  userPrompt: string,
+  existingPlan?: ScheduleResponse
 ): Promise<ScheduleResponse> {
+  const systemContent = existingPlan
+    ? MODIFY_SYSTEM_PROMPT + '\n\n现有计划：\n' + JSON.stringify(existingPlan, null, 2)
+    : SYSTEM_PROMPT;
+
   const request: GenRequest = {
     model: 'deepseek-chat',
     messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: systemContent },
       { role: 'user', content: userPrompt },
     ],
     temperature: 0.7,
